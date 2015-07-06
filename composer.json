@@ -1,0 +1,27 @@
+{
+    "name": "pcabreus/whatsapp-api",
+    "type": "library",
+    "description": "A WhatsApp PHP application",
+    "keywords": ["whatsapp","pcabreus", "positibelabs"],
+    "homepage": "http://positibelabs.blogspot.com/libraries/whatsapp",
+    "license": "Private",
+    "version": "0.1.0.0",
+    "authors": [
+        {
+            "name": "Pedro Carlos Abreu Jiménez",
+            "email": "pcabreus@gmail.com",
+            "homepage": "https://github.com/pcabreus"
+        }
+    ],
+    "require": {
+        "mgp25/whatsapi": "dev-master"
+    },
+    "autoload": {
+        "psr-4": { "Pcabreus\\WhatsApp": "" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
+    }
+}
