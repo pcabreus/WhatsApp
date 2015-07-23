@@ -17,7 +17,7 @@
         "mgp25/whatsapi": "dev-master"
     },
     "autoload": {
-        "psr-4": { "Pcabreus\\WhatsApp": "" }
+        "psr-4": { "Pcabreus\\WhatsApp\\": "" }
     },
     "extra": {
         "branch-alias": {
