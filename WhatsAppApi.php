@@ -20,6 +20,9 @@ class WhatsAppApi
     const MESSAGE_TYPE_VIDEO = 'video';
     const MESSAGE_TYPE_LOCATION = 'location';
 
+    const CODE_REQUEST_TYPE_SMS = 'sms';
+    const CODE_REQUEST_TyPE_VOICE = 'voice';
+
     /**
      * @var  \WhatsProt
      */
@@ -225,6 +228,44 @@ class WhatsAppApi
                 $message['locationname'],
                 null
             );
+        }
+    }
+
+    /**
+     * Send the code for request the WhatsApp password to it own phone
+     *
+     * The option for method can be:
+     *      - WhatsAppApi::CODE_REQUEST_TYPE_SMS
+     *      - WhatsAppApi::CODE_REQUEST_TYPE_VOICE
+     *
+     * @param string $method The method should be sms or voice
+     * @return bool
+     */
+    public function sendCodeRequest($method = WhatsAppApi::CODE_REQUEST_TYPE_SMS)
+    {
+        try {
+            $this->wa->codeRequest($method);
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the WhatsApp password
+     *
+     * @param string $code Code received in the phone after sendCodeRequest() method execution
+     * @return string|null The WhatsApp password
+     */
+    public function getPasswordFromCode($code)
+    {
+        try {
+            $result = $this->wa->codeRegister($code);
+
+            return $result->pw;
+        } catch (\Exception $e) {
+            return null;
         }
     }
 
