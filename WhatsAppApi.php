@@ -247,7 +247,7 @@ class WhatsAppApi
      *      - WhatsAppApi::CODE_REQUEST_TYPE_VOICE
      *
      * @param string $method The method should be sms or voice
-     * @return array|null The
+     * @return null|WhatsAppResponse
      */
     public function sendCodeRequest($method = WhatsAppApi::CODE_REQUEST_TYPE_SMS)
     {

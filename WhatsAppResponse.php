@@ -48,6 +48,26 @@ class WhatsAppResponse {
     }
 
     /**
+     * Is the status 'fail'
+     *
+     * @return bool
+     */
+    public function isFail()
+    {
+        return $this->response->status === 'fail';
+    }
+
+    /**
+     * Get the fail reason
+     *
+     * @return mixed
+     */
+    public function getFailReason()
+    {
+        return $this->response->reason;
+    }
+
+    /**
      * Get a property
      *
      * @param $property
