@@ -1,4 +1,12 @@
 <?php
+/**
+ * This file is part of the Pcabreus\WhatsApp library.
+ *
+ * (c) Pedro Carlos Abreu <pcabreus@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Pcabreus\WhatsApp;
 
@@ -239,16 +247,16 @@ class WhatsAppApi
      *      - WhatsAppApi::CODE_REQUEST_TYPE_VOICE
      *
      * @param string $method The method should be sms or voice
-     * @return bool
+     * @return array|null The
      */
     public function sendCodeRequest($method = WhatsAppApi::CODE_REQUEST_TYPE_SMS)
     {
         try {
-            $this->wa->codeRequest($method);
+            $result = $this->wa->codeRequest($method);
 
-            return true;
+            return new WhatsAppResponse($result);
         } catch (\Exception $e) {
-            return false;
+            return null;
         }
     }
 
