@@ -271,7 +271,9 @@ class WhatsAppApi
         try {
             $result = $this->wa->codeRegister($code);
 
-            return $result->pw;
+            $response = new WhatsAppResponse($result);
+
+            return $response->getProperty('pw');
         } catch (\Exception $e) {
             return null;
         }
