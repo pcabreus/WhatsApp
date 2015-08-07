@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "whatsapp/chat-api": "dev-master"
+        "whatsapp/chat-api": "~2.5"
     },
     "autoload": {
         "psr-4": { "Pcabreus\\WhatsApp\\": "" }
