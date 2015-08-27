@@ -47,14 +47,14 @@ class WhatsAppApi
 
     private $debug;
 
-    public function config($number, $nickname, $password, $debug = false)
+    public function config($number, $nickname, $password, $debug = false, $identifyFile = false)
     {
         $this->setNumber($number);
         $this->setNick($nickname);
         $this->setPassword($password);
         $this->setDebug($debug);
 
-        $this->wa = new \WhatsProt($this->number, $this->nick, $this->debug);
+        $this->wa = new \WhatsProt($this->number, $this->nick, $this->debug, $identifyFile);
         $this->wa->eventManager()->bind('onGetMessage', array($this, 'processReceivedMessage'));
         $this->wa->eventManager()->bind('onConnect', array($this, 'connected'));
         $this->wa->eventManager()->bind('onGetGroups', array($this, 'processGroupArray'));
