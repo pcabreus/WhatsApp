@@ -10,6 +10,12 @@
 
 namespace Pcabreus\WhatsApp;
 
+use Pcabreus\WhatsApp\Exception\CodeRegisterFailed;
+use Pcabreus\WhatsApp\Exception\CodeRegisterFailedException;
+use Pcabreus\WhatsApp\Exception\ResponseException;
+use Pcabreus\WhatsApp\Exception\TooManyGuessesException;
+use Pcabreus\WhatsApp\Exception\TooRecentException;
+
 /**
  * Class WhatsAppApi
  *
@@ -58,6 +64,13 @@ class WhatsAppApi
         $this->wa->eventManager()->bind('onGetMessage', array($this, 'processReceivedMessage'));
         $this->wa->eventManager()->bind('onConnect', array($this, 'connected'));
         $this->wa->eventManager()->bind('onGetGroups', array($this, 'processGroupArray'));
+        $this->wa->eventManager()->bind('onCodeRequestFailedTooRecent', array($this, 'throwTooRecentException'));
+        $this->wa->eventManager()->bind(
+            'onCodeRequestFailedTooManyGuesses',
+            array($this, 'throwTooManyGuessesException')
+        );
+        $this->wa->eventManager()->bind('onCodeRequestFailed', array($this, 'throwCodeRequestFailedException'));
+        $this->wa->eventManager()->bind('onCodeRegisterFailed', array($this, 'throwCodeRegisterFailedException'));
     }
 
     /**
@@ -166,9 +179,10 @@ class WhatsAppApi
      * message/video/image/location message to
      * a contact.
      *
-     * @param array|string|integer $toNumbers
+     * @param $toNumbers
      * @param $message
      * @param $type
+     * @return array
      */
     public function sendMessage($toNumbers, $message, $type)
     {
@@ -177,22 +191,25 @@ class WhatsAppApi
             $toNumbers = array($toNumbers);
         }
 
+        $messagesId = array();
+
         foreach ($toNumbers as $to) {
+            $id = null;
             if ($type === self::MESSAGE_TYPE_TEXT) {
                 $this->wa->sendMessageComposing($to);
-                $this->wa->sendMessage($to, $message);
+                $id = $this->wa->sendMessage($to, $message);
             }
             if ($type === self::MESSAGE_TYPE_IMAGE) {
-                $this->wa->sendMessageImage($to, $message);
+                $id = $this->wa->sendMessageImage($to, $message);
             }
             if ($type === self::MESSAGE_TYPE_AUDIO) {
-                $this->wa->sendMessageAudio($to, $message);
+                $id = $this->wa->sendMessageAudio($to, $message);
             }
             if ($type === self::MESSAGE_TYPE_VIDEO) {
-                $this->wa->sendMessageVideo($to, $message);
+                $id = $this->wa->sendMessageVideo($to, $message);
             }
             if ($type === self::MESSAGE_TYPE_LOCATION) {
-                $this->wa->sendMessageLocation(
+                $id = $this->wa->sendMessageLocation(
                     $to,
                     $message['userlong'],
                     $message['userlat'],
@@ -200,7 +217,10 @@ class WhatsAppApi
                     null
                 );
             }
+            $messagesId[$to] = $id;
         }
+
+        return $messagesId;
     }
 
     /**
@@ -212,24 +232,27 @@ class WhatsAppApi
      * @param $toNumbers
      * @param $message
      * @param $type
+     * @return array|null|string
      */
     public function sendBroadcast($toNumbers, $message, $type)
     {
         $this->connectToWhatsApp();
+
+        $messagesId = array();
         if ($type === self::MESSAGE_TYPE_TEXT) {
-            $this->wa->sendBroadcastMessage($toNumbers, $message);
+            $messagesId = $this->wa->sendBroadcastMessage($toNumbers, $message);
         }
         if ($type === self::MESSAGE_TYPE_IMAGE) {
-            $this->wa->sendBroadcastImage($toNumbers, $message);
+            $messagesId = $this->wa->sendBroadcastImage($toNumbers, $message);
         }
         if ($type === self::MESSAGE_TYPE_AUDIO) {
-            $this->wa->sendBroadcastAudio($toNumbers, $message);
+            $messagesId = $this->wa->sendBroadcastAudio($toNumbers, $message);
         }
         if ($type === self::MESSAGE_TYPE_VIDEO) {
-            $this->wa->sendBroadcastVideo($toNumbers, $message);
+            $messagesId = $this->wa->sendBroadcastVideo($toNumbers, $message);
         }
         if ($type === self::MESSAGE_TYPE_LOCATION) {
-            $this->wa->sendBroadcastLocation(
+            $messagesId = $this->wa->sendBroadcastLocation(
                 $toNumbers,
                 $message['userlong'],
                 $message['userlat'],
@@ -237,6 +260,8 @@ class WhatsAppApi
                 null
             );
         }
+
+        return $messagesId;
     }
 
     /**
@@ -255,6 +280,12 @@ class WhatsAppApi
             $result = $this->wa->codeRequest($method);
 
             return new WhatsAppResponse($result);
+        } catch (TooRecentException $e) {
+            return $e->getResponse();
+        } catch (TooManyGuessesException $e) {
+            return $e->getResponse();
+        } catch (ResponseException $e) {
+            return $e->getResponse();
         } catch (\Exception $e) {
             return null;
         }
@@ -263,18 +294,20 @@ class WhatsAppApi
     /**
      * Get the WhatsApp password
      *
-     * @param string $code Code received in the phone after sendCodeRequest() method execution
-     * @return string|null The WhatsApp password
+     * @param $code
+     * @return null|WhatsAppResponse
      */
-    public function getPasswordFromCode($code)
+    public function sendCodeRegister($code)
     {
         try {
             $result = $this->wa->codeRegister($code);
 
             $response = new WhatsAppResponse($result);
 
-            return $response->getProperty('pw');
-        } catch (\Exception $e) {
+            return $response;
+        } catch (CodeRegisterFailedException $e) {
+            return $e->getResponse();
+        }catch (\Exception $e) {
             return null;
         }
     }
@@ -426,5 +459,88 @@ class WhatsAppApi
         $this->messages = $messages;
     }
 
+    /**
+     * @param $phoneNumber
+     * @param $method
+     * @param $reason
+     * @param $retryAfter
+     * @throws TooRecentException
+     */
+    public function throwTooRecentException($phoneNumber, $method, $reason, $retryAfter)
+    {
+        $response = new WhatsAppResponse(
+            array(
+                'status' => 'fail',
+                'reason' => $reason,
+                'retry_after' => $retryAfter,
+                'method' => $method,
+                'number' => $phoneNumber
+            )
+        );
+        $minutes = round($retryAfter / 60);
+        throw new TooRecentException("Code already sent. Retry after $minutes minutes.", $response);
+    }
 
+    /**
+     * @param $phoneNumber
+     * @param $method
+     * @param $reason
+     * @param $retryAfter
+     * @throws TooManyGuessesException
+     */
+    public function throwTooManyGuessesException($phoneNumber, $method, $reason, $retryAfter)
+    {
+        $response = new WhatsAppResponse(
+            array(
+                'status' => 'fail',
+                'reason' => $reason,
+                'retry_after' => $retryAfter,
+                'method' => $method,
+                'number' => $phoneNumber
+            )
+        );
+        $minutes = round($retryAfter / 60);
+        throw new TooManyGuessesException("Too many guesses. Retry after $minutes minutes.", $response);
+    }
+
+    /**
+     * @param $phoneNumber
+     * @param $method
+     * @param $reason
+     * @param $param
+     * @throws ResponseException
+     */
+    public function throwCodeRequestFailedException($phoneNumber, $method, $reason, $param)
+    {
+        $response = new WhatsAppResponse(
+            array(
+                'status' => 'fail',
+                'reason' => $reason,
+                'param' => $param,
+                'method' => $method,
+                'number' => $phoneNumber
+            )
+        );
+        throw new ResponseException("There was a problem trying to request the code.", $response);
+    }
+
+    /**
+     * @param $phoneNumber
+     * @param $status
+     * @param $reason
+     * @param $retryAfter
+     * @throws CodeRegisterFailedException
+     */
+    public function throwCodeRegisterFailedException($phoneNumber, $status, $reason, $retryAfter)
+    {
+        $response = new WhatsAppResponse(
+            array(
+                'status' => $status,
+                'reason' => $reason,
+                'retry_after' => $retryAfter,
+                'number' => $phoneNumber
+            )
+        );
+        throw new CodeRegisterFailedException("An error occurred registering the registration code from WhatsApp. Reason: $reason", $response);
+    }
 } 

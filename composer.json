@@ -5,6 +5,7 @@
     "keywords": ["whatsapp","pcabreus", "positibelabs"],
     "homepage": "http://positibelabs.blogspot.com/libraries/whatsapp",
     "license": "MIT",
+    "version": "0.1.3.0",
     "authors": [
         {
             "name": "Pedro Carlos Abreu Jiménez",

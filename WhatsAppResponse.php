@@ -17,8 +17,9 @@ namespace Pcabreus\WhatsApp;
  *
  * @author Pedro Carlos Abreu <pcabreus@gmail.com>
  */
-class WhatsAppResponse {
-
+class WhatsAppResponse
+{
+    private $messageException;
     private $response;
 
     public function __construct($response = null)
@@ -34,7 +35,7 @@ class WhatsAppResponse {
      */
     public function isOk()
     {
-        return $this->response->status === 'ok';
+        return $this->getProperty('status') === 'ok';
     }
 
     /**
@@ -44,7 +45,7 @@ class WhatsAppResponse {
      */
     public function isSent()
     {
-        return $this->response->status === 'sent';
+        return $this->getProperty('status') === 'sent';
     }
 
     /**
@@ -54,7 +55,7 @@ class WhatsAppResponse {
      */
     public function isFail()
     {
-        return $this->response->status === 'fail';
+        return $this->getProperty('status') === 'fail';
     }
 
     /**
@@ -64,7 +65,7 @@ class WhatsAppResponse {
      */
     public function getFailReason()
     {
-        return $this->response->reason;
+        return $this->getProperty('reason');
     }
 
     /**
@@ -75,7 +76,11 @@ class WhatsAppResponse {
      */
     public function getProperty($property)
     {
-        return $this->response->$property;
+        if (is_array($this->response)) {
+            $this->response[$property];
+        }
+
+        return isset($this->response->$property) ? $this->response->$property : null;
     }
 
     /**
@@ -94,4 +99,19 @@ class WhatsAppResponse {
         $this->response = $response;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getMessageException()
+    {
+        return $this->messageException;
+    }
+
+    /**
+     * @param mixed $messageException
+     */
+    public function setMessageException($messageException)
+    {
+        $this->messageException = $messageException;
+    }
 } 

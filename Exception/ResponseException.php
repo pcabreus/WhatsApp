@@ -35,6 +35,7 @@ class ResponseException extends \Exception
     ) {
         parent::__construct($message, $code, $previous);
         $this->response = $whatsAppResponse;
+        $this->response->setMessageException($message);
     }
 
 
