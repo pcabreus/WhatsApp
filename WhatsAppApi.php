@@ -61,16 +61,35 @@ class WhatsAppApi
         $this->setDebug($debug);
 
         $this->wa = new \WhatsProt($this->number, $this->nick, $this->debug, $identifyFile);
-        $this->wa->eventManager()->bind('onGetMessage', array($this, 'processReceivedMessage'));
-        $this->wa->eventManager()->bind('onConnect', array($this, 'connected'));
-        $this->wa->eventManager()->bind('onGetGroups', array($this, 'processGroupArray'));
-        $this->wa->eventManager()->bind('onCodeRequestFailedTooRecent', array($this, 'throwTooRecentException'));
+
+        $this->wa->eventManager()->bind(
+            'onGetMessage',
+            array($this, 'processReceivedMessage')
+        );
+        $this->wa->eventManager()->bind(
+            'onConnect',
+            array($this, 'connected')
+        );
+        $this->wa->eventManager()->bind(
+            'onGetGroups',
+            array($this, 'processGroupArray')
+        );
+        $this->wa->eventManager()->bind(
+            'onCodeRequestFailedTooRecent',
+            array($this, 'throwTooRecentException')
+        );
         $this->wa->eventManager()->bind(
             'onCodeRequestFailedTooManyGuesses',
             array($this, 'throwTooManyGuessesException')
         );
-        $this->wa->eventManager()->bind('onCodeRequestFailed', array($this, 'throwCodeRequestFailedException'));
-        $this->wa->eventManager()->bind('onCodeRegisterFailed', array($this, 'throwCodeRegisterFailedException'));
+        $this->wa->eventManager()->bind(
+            'onCodeRequestFailed',
+            array($this, 'throwCodeRequestFailedException')
+        );
+        $this->wa->eventManager()->bind(
+            'onCodeRegisterFailed',
+            array($this, 'throwCodeRegisterFailedException')
+        );
     }
 
     /**
@@ -307,7 +326,7 @@ class WhatsAppApi
             return $response;
         } catch (CodeRegisterFailedException $e) {
             return $e->getResponse();
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return null;
         }
     }
@@ -541,6 +560,8 @@ class WhatsAppApi
                 'number' => $phoneNumber
             )
         );
-        throw new CodeRegisterFailedException("An error occurred registering the registration code from WhatsApp. Reason: $reason", $response);
+        throw new CodeRegisterFailedException(
+            "An error occurred registering the registration code from WhatsApp. Reason: $reason", $response
+        );
     }
 } 

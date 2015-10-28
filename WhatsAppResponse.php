@@ -77,7 +77,7 @@ class WhatsAppResponse
     public function getProperty($property)
     {
         if (is_array($this->response)) {
-            $this->response[$property];
+            return $this->response[$property];
         }
 
         return isset($this->response->$property) ? $this->response->$property : null;
