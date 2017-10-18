@@ -1,5 +1,5 @@
-WhatsAppApi
-===========
+WhatsAppApi [Abandoned]
+=======================
 
 This library is a simple php programming object oriented of "https://github.com/mgp25/Chat-API" application.
 
