@@ -1,6 +1,8 @@
 WhatsAppApi [Abandoned]
 =======================
 
+Caution: https://www.linkedin.com/feed/update/urn:li:activity:6359786787627417600
+
 This library is a simple php programming object oriented of "https://github.com/mgp25/Chat-API" application.
 
 For full documentation **read the [wiki](https://github.com/mgp25/Chat-API/wiki)**
